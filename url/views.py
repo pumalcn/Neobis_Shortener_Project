@@ -1,7 +1,9 @@
+import random
+
 from django.http import HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect, render
 from rest_framework import status
-
+from django.db import IntegrityError
 from .models import URL
 from rest_framework.decorators import api_view
 import hashlib
@@ -29,17 +31,21 @@ def create_short_url(request):
     if 'url' in request.data:
         original_url = request.data['url']
 
-        # Unique hash for the URL
-        hash_value = hashlib.md5(original_url.encode()).hexdigest()[:10]
+        while True:
+            # Генерация хеша с SHA-256 и добавлением случайности
+            hash_value = hashlib.sha256((original_url + str(random.random())).encode()).hexdigest()[:10]
 
-        # Create a new URL object in the database
-        url = URL.objects.create(hash=hash_value, url=original_url)
+            # Попытка создать новый URL объект
+            try:
+                url, created = URL.objects.get_or_create(hash=hash_value, defaults={'url': original_url})
+                if created:
+                    # Если URL успешно создан и сохранен
+                    return JsonResponse({'short_url': f'/url/{hash_value}/'}, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                # Если происходит ошибка целостности, цикл продолжится
+                continue
 
-        # Return the shortened URl in the response
-
-        return JsonResponse({'short_url': f'/url/{hash_value}/'}, status=status.HTTP_201_CREATED)
     return JsonResponse({'error': 'Invalid request data'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['GET'])
 def get_url_stats(request, hash):
