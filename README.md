@@ -49,7 +49,7 @@ To get started with the URL shortener, you can clone the repository from GitHub 
    
 7. Open your web browser and go to http://localhost:8000 to access the Todo_List Django Web App.
 
-
+8. For Set Up the Postgres Database use tutorial https://www.koyeb.com/tutorials/use-django-rest-framework-and-managed-postgres-to-build-an-api
 ## Contributing
 
 We welcome contributions to improve the Django To Do List Web App. If you'd like to contribute, please follow these guidelines:
